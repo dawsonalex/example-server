@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+function git_current_branch() {
+  git symbolic-ref --short HEAD
+}
+
+function go_build_info_ldflags() {
+  echo "-X $1/build.Version=0.0.1 -X $1/build.Commit=$(git_current_branch)"
+}
+
+##
+function go_build_with_version_info() {
+  out=$1
+  go_module_path=$2
+  package=$3
+  go build -o "$out" -ldflags "$(go_build_info_ldflags "$go_module_path")" "$package"
+}
+
+function makeHelp() {
+  grep '^.PHONY: .* #' makefile | sed 's/\.PHONY: \(.*\) # \(.*\)/\1 	\2/' | expand -t20
+}
