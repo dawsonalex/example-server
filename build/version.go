@@ -1,11 +1,18 @@
 package build
 
-import "strings"
+import (
+	_ "embed"
+	"fmt"
+	"strings"
+)
 
-// TODO: For some reason these don't work with ldflags
+//go:embed version
+var Version string
+
 var (
-	Version     = "0.0.0"
 	Commit      = "939jf93k92je"
+	Branch      = "main"
+	Host        = "main"
 	Environment = "local"
 )
 
@@ -15,9 +22,15 @@ type VersionInfo struct {
 	Patch string `json:"patch"`
 }
 
+func (v VersionInfo) Sprint() string {
+	return fmt.Sprintf("%s.%s.%s", v.Major, v.Minor, v.Patch)
+}
+
 type BuildInfo struct {
 	Version     VersionInfo `json:"version"`
 	Commit      string      `json:"commit"`
+	Branch      string      `json:"branch"`
+	Host        string      `json:"host"`
 	Environment string      `json:"environment"`
 }
 
@@ -31,6 +44,8 @@ func Info() BuildInfo {
 			Patch: splitVersion[2],
 		},
 		Commit:      Commit,
+		Branch:      Branch,
+		Host:        Host,
 		Environment: Environment,
 	}
 }
