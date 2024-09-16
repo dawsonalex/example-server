@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/dawsonalex/todo-server/build"
 	"github.com/dawsonalex/todo-server/httpserver"
-	log "github.com/sirupsen/logrus"
+	"github.com/dawsonalex/todo-server/log"
 	"io"
 	"net"
 	"net/http"
@@ -19,9 +18,9 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	log.SetOutput(w)
-	log.Info("Starting server")
-	log.Infof("info: %v", build.Info())
+	logger := log.New()
+	logger.SetOutput(w)
+	logger.WithBuildInfo().Info("Starting server")
 
 	srv := httpserver.New()
 	httpServer := &http.Server{
@@ -30,7 +29,7 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 		Handler: srv,
 	}
 	go func() {
-		log.Infof("listening on %s\n", httpServer.Addr)
+		logger.Infof("listening on %s\n", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			fmt.Fprintf(os.Stderr, "error listening and serving: %s\n", err)
 		}
@@ -48,8 +47,6 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 		}
 	}()
 	wg.Wait()
-	return nil
-
 	return nil
 }
 
