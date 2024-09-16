@@ -5,7 +5,7 @@ function git_current_branch() {
 }
 
 function go_build_info_ldflags() {
-  echo "-X $1/build.Version=0.0.1 -X $1/build.Commit=$(git_current_branch)"
+  echo "-X $1/build.Version=0.0.1 -X $1/build.Commit=$(git_current_branch) -X $1/build.Environment=$(hostname)"
 }
 
 ##

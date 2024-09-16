@@ -4,8 +4,9 @@ import "strings"
 
 // TODO: For some reason these don't work with ldflags
 var (
-	Version = "0.0.0"
-	Commit  = "939jf93k92je"
+	Version     = "0.0.0"
+	Commit      = "939jf93k92je"
+	Environment = "local"
 )
 
 type VersionInfo struct {
@@ -15,8 +16,9 @@ type VersionInfo struct {
 }
 
 type BuildInfo struct {
-	Version VersionInfo `json:"version"`
-	Commit  string      `json:"commit"`
+	Version     VersionInfo `json:"version"`
+	Commit      string      `json:"commit"`
+	Environment string      `json:"environment"`
 }
 
 func Info() BuildInfo {
@@ -28,6 +30,7 @@ func Info() BuildInfo {
 			Minor: splitVersion[1],
 			Patch: splitVersion[2],
 		},
-		Commit: Commit,
+		Commit:      Commit,
+		Environment: Environment,
 	}
 }
