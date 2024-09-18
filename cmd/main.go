@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/dawsonalex/todo-server/build"
+	"github.com/dawsonalex/todo-server/config"
 	"github.com/dawsonalex/todo-server/httpserver"
-	"github.com/dawsonalex/todo-server/log"
-	"io"
+
+	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"os"
@@ -14,18 +16,25 @@ import (
 	"time"
 )
 
-func run(ctx context.Context, w io.Writer, args []string) error {
+func run(ctx context.Context, conf *config.C) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	logger := log.New()
-	logger.SetOutput(w)
-	logger.WithBuildInfo().Info("Starting server")
+	logger := newLogger(conf.Log)
+
+	b := build.Info()
+	logger.WithFields(log.Fields{
+		"version":     b.Version.Sprint(),
+		"commit":      b.Commit,
+		"branch":      b.Branch,
+		"host":        b.Host,
+		"environment": b.Environment,
+	}).Info("Starting Server")
 
 	srv := httpserver.New()
 	httpServer := &http.Server{
 		// TODO: Decide how to inject config here.
-		Addr:    net.JoinHostPort("0.0.0.0", "8080"),
+		Addr:    net.JoinHostPort(conf.Server.Host, conf.Server.Port),
 		Handler: srv,
 	}
 	go func() {
@@ -50,9 +59,22 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	return nil
 }
 
+func newLogger(conf config.Log) *log.Logger {
+	logger := log.New()
+	logger.SetOutput(os.Stdout)
+	logger.SetLevel(conf.Level)
+	return logger
+}
+
 func main() {
 	ctx := context.Background()
-	if err := run(ctx, os.Stdout, os.Args); err != nil {
+
+	conf, err := config.ParseFile(config.FlagPath())
+	if err != nil {
+		panic("error parsing config: " + err.Error())
+	}
+
+	if err := run(ctx, conf); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}

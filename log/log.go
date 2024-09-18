@@ -6,9 +6,10 @@ import (
 )
 
 func New() *Logger {
-	return &Logger{
+	logger := &Logger{
 		Logger: logrus.New(),
 	}
+	return logger
 }
 
 type Logger struct {
