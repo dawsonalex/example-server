@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/dawsonalex/todo-server/build"
 	"github.com/dawsonalex/todo-server/config"
@@ -21,6 +22,7 @@ func run(ctx context.Context, conf *config.C) error {
 	defer cancel()
 
 	logger := newLogger(conf.Log)
+	logger.SetFormatter(&log.TextFormatter{})
 
 	b := build.Info()
 	logger.WithFields(log.Fields{
@@ -30,6 +32,13 @@ func run(ctx context.Context, conf *config.C) error {
 		"host":        b.Host,
 		"environment": b.Environment,
 	}).Info("Starting Server")
+
+	confBytes, err := json.MarshalIndent(conf, "", "  ")
+	if err != nil {
+		logger.Warn("Failed to marshal configuration")
+	} else {
+		logger.Infof("config:\n%s", confBytes)
+	}
 
 	srv := httpserver.New()
 	httpServer := &http.Server{
@@ -71,7 +80,8 @@ func main() {
 
 	conf, err := config.ParseFile(config.FlagPath())
 	if err != nil {
-		panic("error parsing config: " + err.Error())
+		log.Warningf("error parsing config file, using defaults: %s", err)
+		conf = config.Default
 	}
 
 	if err := run(ctx, conf); err != nil {

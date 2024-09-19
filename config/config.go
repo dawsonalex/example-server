@@ -3,6 +3,7 @@ package config
 
 import (
 	"flag"
+	"github.com/sirupsen/logrus"
 	"github.com/wlevene/ini"
 	"os"
 )
@@ -17,6 +18,16 @@ func init() {
 type C struct {
 	Server Server `ini:"http"`
 	Log    Log    `ini:"log"`
+}
+
+var Default = &C{
+	Server: Server{
+		Host: "localhost",
+		Port: "8432",
+	},
+	Log: Log{
+		Level: logrus.InfoLevel,
+	},
 }
 
 // ParseFile parses an INI file and returns a constructed config.C. path can be any INI file,
