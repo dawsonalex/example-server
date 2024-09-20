@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func run(ctx context.Context, conf *config.C) error {
+func run(ctx context.Context, conf config.C) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
@@ -40,7 +40,7 @@ func run(ctx context.Context, conf *config.C) error {
 		logger.Infof("config:\n%s", confBytes)
 	}
 
-	srv := httpserver.New()
+	srv := httpserver.New(conf)
 	httpServer := &http.Server{
 		// TODO: Decide how to inject config here.
 		Addr:    net.JoinHostPort(conf.Server.Host, conf.Server.Port),
@@ -84,7 +84,7 @@ func main() {
 		conf = config.Default
 	}
 
-	if err := run(ctx, conf); err != nil {
+	if err := run(ctx, *conf); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
